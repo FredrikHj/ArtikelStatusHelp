@@ -1,19 +1,17 @@
 /* ================================================== Input Form ==================================================
 Import  modules */
 import { store } from "../store";
-import { setTargetArticelObj, setPaginationCurrentPage, setPaginationQuentityPages, setCurrentUrl} from "../redux/ArticelstatusSlicer";    
+import { setPaginationCurrentPage, setPaginationQuentityPages} from "../redux/ArticelstatusSlicer";    
 
 import { useSelector } from 'react-redux';
 import {Helmet} from "react-helmet";
 
 /* ================================================== ArticelStatus ==================================================
 Import  modules */
-import { useState, useEffect } from 'react';
-import { Box, Button, Table, TableRow, TableCell, TableHead, TableBody, TableContainer, Typography, collapseClasses } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Button, Table, TableRow, TableCell, TableHead, TableBody, TableContainer } from '@mui/material';
 import CalApiSQLData from '../data/CalApiSQLData';
-import checkReduxStoreTree, {
-  handleStateChange,
-}from "@/data/StoreSubscriber";
+import checkReduxStoreTree from "@/data/StoreSubscriber";
 import LoadingIndicator from "../data/LoadingIndicator";
 import ArticelSearch from "../data/ArticelSearch";
 
@@ -29,7 +27,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
     
 var ArticelStatus = () =>{
     //store.subscribe(handleStateChange)
-
+    
     var storeListener: any = checkReduxStoreTree("articelStatus");
     const [ updatedStateTree, updateUpdatedStateTree ] = useState(null);
     var getStoreData: any = useSelector((state: any) => state["articelStatus"]);
@@ -43,7 +41,18 @@ var ArticelStatus = () =>{
     const [ indexEndInterval, updateIndexEndInterval] = useState(0);
     const [ articelList, updateArticelList ] = useState([]);
     const [ targetArticelObj, updateTargetArticelObj ] = useState([]);
-    
+
+    // Change the articel object acording the pages you have selected. The first time is always page 1 
+        const [ changeArticelList, updateChangeArticelList ] = useState((articelData: Array<object>, choosenPage: number ) => {
+            console.log('changeArticelList --> ChoosenPage :', choosenPage);
+            var startIndex: number = indexStartInterval*choosenPage;
+            var endIndex: number = indexEndInterval*choosenPage;
+            
+            var shorterArticelList: Array<object> = articelData.slice(startIndex, endIndex);
+            console.log('ShorterArticelList : \n', shorterArticelList, 'StartIndex: ', indexStartInterval, '\n endIndex: ', indexEndInterval);
+            updateArticelList(shorterArticelList);
+        }
+    )
     useEffect(() => {       
         // Update the store state tree with a delay of 2 sec to give the data to be updated before the can components handle it
         setTimeout(() => {
@@ -61,26 +70,14 @@ var ArticelStatus = () =>{
                 store.dispatch(setPaginationQuentityPages(quentityPages));
                 updateIsDataReceived(true);
             }
-        
         // Run if data is received
             if(updatedStateTree !== null && updatedStateTree["artList"].length > 0){
-                console.log("rgebr");
-                
-                changeArticelList(updatedStateTree["artList"], 1);
+                updateChangeArticelList(updatedStateTree["artList"], 1);
                 indexEndInterval === 0 && updateIndexEndInterval(updatedStateTree.paginationValue["quentityPages"]);
             }
-        
-    }, [ storeListener, updatedStateTree, currentPage, indexStartInterval, indexEndInterval, quentityPages]);
-    // Change the articel object acording the pages you have selected. The first time is always page 1 
-        var changeArticelList = (articelData: Array<object>, choosenPage: number ) => {
-            console.log('changeArticelList --> ChoosenPage :', choosenPage);
-            var startIndex: number = indexStartInterval*choosenPage;
-            var endIndex: number = indexEndInterval*choosenPage;
-            
-            var shorterArticelList: Array<object> = articelData.slice(startIndex, endIndex);
-            console.log('ShorterArticelList : \n', shorterArticelList, 'StartIndex: ', indexStartInterval, '\n endIndex: ', indexEndInterval);
-            updateArticelList(shorterArticelList);
-        }
+    }, [ storeListener, updatedStateTree, currentPage, indexStartInterval, indexEndInterval, quentityPages, changeArticelList]);
+    
+
     // Run when you are changing page     
         const onChangePage = (choosenPage: number) => {
             // Index interval to show eatch pages
