@@ -1,0 +1,18 @@
+The Sturcture are as follows:
+/
+next.config.js
+tsconfig.json
+
+data:
+ArticelSearch.tsx
+LoadingIndicator.css
+LoadingIndicator.tsx
+
+pages:
+_app.tsx
+_document.js
+_error.js
+ArtikelStatus.tsx
+
+pages/api/
+ReqMSSQLData.ts
